@@ -28,8 +28,10 @@ on init
     chmod 0660 /sys/devices/system/cpu/cpuquiet/rqbalance/nr_down_run_thresholds
 
 on charger
-    # Enable Power modes and set the CPU Freq Sampling rates
+    # Disable thermal
     write /sys/module/msm_thermal/core_control/enabled 0
+
+    # Bring CPUs online
     write /sys/devices/system/cpu/cpu1/online 1
     write /sys/devices/system/cpu/cpu2/online 1
     write /sys/devices/system/cpu/cpu3/online 1
@@ -37,6 +39,8 @@ on charger
     write /sys/devices/system/cpu/cpu5/online 1
     write /sys/devices/system/cpu/cpu6/online 1
     write /sys/devices/system/cpu/cpu7/online 1
+
+    # Configure governor settings
     write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor "powersave"
     write /sys/devices/system/cpu/cpu1/cpufreq/scaling_governor "powersave"
     write /sys/devices/system/cpu/cpu2/cpufreq/scaling_governor "powersave"
@@ -53,7 +57,8 @@ on charger
     write /sys/devices/system/cpu/cpu5/cpufreq/scaling_min_freq 200000
     write /sys/devices/system/cpu/cpu6/cpufreq/scaling_min_freq 200000
     write /sys/devices/system/cpu/cpu7/cpufreq/scaling_min_freq 200000
-    write /sys/module/msm_thermal/core_control/enabled 1
+
+    # Bring CPUs offline
     write /sys/devices/system/cpu/cpu1/online 0
     write /sys/devices/system/cpu/cpu2/online 0
     write /sys/devices/system/cpu/cpu3/online 0
@@ -61,6 +66,9 @@ on charger
     write /sys/devices/system/cpu/cpu5/online 0
     write /sys/devices/system/cpu/cpu6/online 0
     write /sys/devices/system/cpu/cpu7/online 0
+
+    # Enable thermal
+    write /sys/module/msm_thermal/core_control/enabled 1
 
 on boot
     # Disable thermal
@@ -78,13 +86,13 @@ on boot
     chown root system /sys/devices/system/cpu/cpu5/online
     chown root system /sys/devices/system/cpu/cpu6/online
     chown root system /sys/devices/system/cpu/cpu7/online
-    chmod 664 /sys/devices/system/cpu/cpu1/online
-    chmod 664 /sys/devices/system/cpu/cpu2/online
-    chmod 664 /sys/devices/system/cpu/cpu3/online
-    chmod 664 /sys/devices/system/cpu/cpu4/online
-    chmod 664 /sys/devices/system/cpu/cpu5/online
-    chmod 664 /sys/devices/system/cpu/cpu6/online
-    chmod 664 /sys/devices/system/cpu/cpu7/online
+    chmod 0664 /sys/devices/system/cpu/cpu1/online
+    chmod 0664 /sys/devices/system/cpu/cpu2/online
+    chmod 0664 /sys/devices/system/cpu/cpu3/online
+    chmod 0664 /sys/devices/system/cpu/cpu4/online
+    chmod 0664 /sys/devices/system/cpu/cpu5/online
+    chmod 0664 /sys/devices/system/cpu/cpu6/online
+    chmod 0664 /sys/devices/system/cpu/cpu7/online
 
     # Bring CPUs online
     write /sys/devices/system/cpu/cpu1/online 1
@@ -95,7 +103,6 @@ on boot
     write /sys/devices/system/cpu/cpu6/online 1
     write /sys/devices/system/cpu/cpu7/online 1
 
-on property:init.svc.bootanim=stopped
     # configure governor settings for little cluster
     write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor "interactive"
     write /sys/devices/system/cpu/cpu0/cpufreq/interactive/above_hispeed_delay "20000 1113600:50000"
@@ -133,11 +140,17 @@ on property:init.svc.bootanim=stopped
     # Enable thermal
     write /sys/module/msm_thermal/core_control/enabled 1
 
-    write /sys/class/kgsl/kgsl-3d0/devfreq/governor "msm-adreno-tz"
     write /dev/cpuctl/cpu.notify_on_migrate 1
 
+    # enable LPM
     write /sys/module/lpm_levels/parameters/sleep_disabled 0
+
+    # Enable rps static configuration
     write /sys/class/net/rmnet0/queues/rx-0/rps_cpus 10
+
+    # change GPU initial power level from 305MHz(level 4) to 180MHz(level 5) for power savings
+    write /sys/class/kgsl/kgsl-3d0/devfreq/governor "msm-adreno-tz"
+    write /sys/class/kgsl/kgsl-3d0/default_pwrlevel 5
 
     # HMP scheduler settings for 8916, 8936, 8939
     write /proc/sys/kernel/sched_window_stats_policy 3

@@ -57,6 +57,12 @@ service sensord /system/vendor/bin/sensord
     group system
     writepid /dev/cpuset/system-background/tasks
 
+# QCOM ADSP FastRPC
+service adsprpcd /system/vendor/bin/adsprpcd
+    class main
+    user media
+    group media
+
 # OSS WLAN setup
 service macaddrsetup /system/bin/macaddrsetup /sys/devices/fb000000.qcom,wcnss-wlan/wcnss_mac_addr
     class core
